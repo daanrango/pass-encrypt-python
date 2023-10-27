@@ -11,6 +11,30 @@ def ping():
     return jsonify({"response": "hello world"})
 
 
+@app.route('/allpasswords', methods=['GET'])
+def get_all_passwords():
+    try:
+        connection = conection_mysql()
+        cursor = connection.cursor()
+        query = "SELECT clave, contrasena_encriptada FROM passwordsEncrypt"
+        cursor.execute(query)
+        results = cursor.fetchall()
+        cursor.close()
+
+        passwords = []
+        for result in results:
+            clave_guardada = result[0]
+            contrasena_encriptada = result[1]
+            contrasena_desencriptada = desencriptar_contrasena(
+                clave_guardada, contrasena_encriptada)
+            passwords.append(contrasena_desencriptada)
+
+        return jsonify({"passwords": passwords})
+
+    except Exception as e:
+        return jsonify({"error": str(e)})
+
+
 @app.route("/encrypt", methods=["POST"])
 def save_password():
     try:
